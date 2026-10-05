@@ -33,7 +33,7 @@ app.use(
   cors({
     origin: [
       process.env.CLIENT_URL || "http://localhost:5173",
-      "https://my-school-963be.web.app/",
+      "https://my-school-963be.web.app",
     ],
     credentials: true,
   }),
