@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import api from '../api';
 
-const DEFAULT = { schoolName: 'School Manager', logo: null, periods: [], weeklyOff: [] };
+const DEFAULT = { schoolName: 'School Manager', logo: null, periods: [], weeklyOff: [], theme: null };
 const Ctx = createContext({ school: DEFAULT, refresh: () => {} });
 export const useSchool = () => useContext(Ctx);
 

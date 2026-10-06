@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import Settings, { DEFAULT_PERIODS } from '../models/Settings.js';
+import Settings, { DEFAULT_PERIODS, THEME_IDS } from '../models/Settings.js';
 import Assignment from '../models/PeriodAssignment.js';
 import { protect, allow } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
@@ -19,7 +19,7 @@ const r = Router();
 // Any logged-in user: branding and period timings (used by the sidebar, timetable, teacher home)
 r.get('/public', protect, wrap(async (req, res) => {
   const s = await getSettings();
-  res.json({ schoolName: s.schoolName, logo: s.logo?.url || null, periods: periodsOf(s), weeklyOff: s.weeklyOff });
+  res.json({ schoolName: s.schoolName, logo: s.logo?.url || null, periods: periodsOf(s), weeklyOff: s.weeklyOff, theme: { site: s.theme?.site || 'royal', admin: s.theme?.admin || 'royal' } });
 }));
 
 r.use(protect, allow('admin'));
@@ -62,6 +62,12 @@ r.put('/', upload.single('logo'), wrap(async (req, res) => {
     if (list.length < periodsOf(s).length && (await Assignment.exists({ period: { $gt: list.length } })))
       return bad(res, `Remove the timetable entries for period ${list.length + 1} onward before deleting those periods`, 409);
     s.periods = list.map((p, i) => ({ number: i + 1, start: p.start, end: p.end }));
+  }
+
+  for (const [field, path] of [['themeSite', 'theme.site'], ['themeAdmin', 'theme.admin']]) {
+    if (b[field] === undefined) continue;
+    if (!THEME_IDS.includes(b[field])) return bad(res, 'Choose one of the listed themes');
+    s.set(path, b[field]);
   }
 
   if (b.removeLogo === 'true' && !req.file) { await deleteImage(s.logo?.publicId); s.set('logo', undefined); }

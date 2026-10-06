@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
 import { initialsOf } from '../components/Avatar.jsx';
 import Icon from '../components/Icon.jsx';
+import { siteVars } from '../utils/themes.js';
 import { SiteProvider, useSite } from './SiteContext.jsx';
 import { Social, telHref } from './ui.jsx';
 
@@ -16,7 +16,6 @@ function Logo({ site, size }) {
 
 function Shell() {
   const { site, error } = useSite();
-  const { user } = useAuth();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   useEffect(() => { window.scrollTo(0, 0); setOpen(false); }, [pathname]);
@@ -24,10 +23,9 @@ function Shell() {
   if (error) return <div className="site s-center"><p>The website is not available right now. Please try again in a few minutes.</p></div>;
   if (!site) return <div className="site s-center"><span className="s-spinner" role="status" aria-label="Loading" /></div>;
   const c = site.content;
-  const portal = user ? (user.role === 'admin' ? '/admin/dashboard' : '/teacher') : '/login';
 
   return (
-    <div className="site">
+    <div className="site" style={siteVars(site.theme?.site)}>
       <a className="s-skip" href="#main">Skip to content</a>
       {(c.contact.phone || c.contact.email || c.contact.hours) && (
         <div className="s-top">
@@ -48,7 +46,6 @@ function Shell() {
           <button className="s-menu-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="s-nav" aria-label="Menu"><Icon name={open ? 'x' : 'menu'} size={24} /></button>
           <nav id="s-nav" className={`s-nav ${open ? 'open' : ''}`} aria-label="Main">
             {LINKS.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'}>{label}</NavLink>)}
-            <Link to={portal} className="s-btn s-btn-navy s-btn-sm">{user ? 'Dashboard' : 'Staff login'}</Link>
           </nav>
         </div>
       </header>
@@ -76,7 +73,7 @@ function Shell() {
             </ul>
           </div>
         </div>
-        <div className="s-copy"><div className="s-wrap"><span>© {new Date().getFullYear()} {site.schoolName}. All rights reserved.</span><Link to={portal}>{user ? 'Dashboard' : 'Staff login'}</Link></div></div>
+        <div className="s-copy"><div className="s-wrap"><span>© {new Date().getFullYear()} {site.schoolName}. All rights reserved.</span></div></div>
       </footer>
     </div>
   );

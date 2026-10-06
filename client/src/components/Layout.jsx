@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { SchoolProvider, useSchool } from '../context/SchoolContext.jsx';
+import { applyAdminTheme, clearAdminTheme } from '../utils/themes.js';
 import Avatar, { initialsOf } from './Avatar.jsx';
 import Icon from './Icon.jsx';
 
@@ -35,6 +36,8 @@ function Shell() {
   const here = flat.find(([p]) => pathname === (p ? `${base}/${p}` : base)) || flat.find(([p]) => p && pathname.startsWith(`${base}/${p}/`));
 
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => { if (school.theme?.admin) applyAdminTheme(school.theme.admin, { persist: true }); }, [school.theme?.admin]);
+  useEffect(() => () => clearAdminTheme(), []);
 
   const chip = (
     <>

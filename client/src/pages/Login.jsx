@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { errMsg } from '../api';
+import api, { errMsg } from '../api';
+import { initialsOf } from '../components/Avatar.jsx';
+import { applyAdminTheme } from '../utils/themes.js';
 
 export default function Login() {
   const { login } = useAuth();
@@ -9,6 +11,10 @@ export default function Login() {
   const [f, setF] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [brand, setBrand] = useState(null);
+  useEffect(() => {
+    api.get('/public/site').then(({ data }) => { setBrand(data); applyAdminTheme(data.theme?.admin, { persist: true }); }).catch(() => {});
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault(); setBusy(true); setError('');
@@ -20,8 +26,8 @@ export default function Login() {
   return (
     <div className="auth">
       <aside className="auth-art">
-        <span className="logo">SM</span>
-        <h2>School Manager</h2>
+        {brand?.logo ? <img className="logo logo-img" src={brand.logo} alt="" /> : <span className="logo">{initialsOf(brand?.schoolName || 'School Manager')}</span>}
+        <h2>{brand?.schoolName || 'School Manager'}</h2>
         <p>Classes, timetables, attendance, exams and report cards, all in one place.</p>
       </aside>
       <main className="auth-main">

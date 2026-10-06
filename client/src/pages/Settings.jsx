@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api, { errMsg } from '../api';
 import { useSchool } from '../context/SchoolContext.jsx';
 import Avatar from '../components/Avatar.jsx';
+import ThemePicker from '../components/ThemePicker.jsx';
+import { applyAdminTheme } from '../utils/themes.js';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const plus = (t, mins) => {
@@ -11,7 +13,11 @@ const plus = (t, mins) => {
 };
 
 export default function Settings() {
-  const { refresh } = useSchool();
+  const { refresh, school } = useSchool();
+  const [theme, setTheme] = useState({ site: 'royal', admin: 'royal' });
+  const savedAdminTheme = useRef(null);
+  savedAdminTheme.current = school.theme?.admin;
+  useEffect(() => () => { if (savedAdminTheme.current) applyAdminTheme(savedAdminTheme.current); }, []); // drop an unsaved preview when leaving
   const [f, setF] = useState({ schoolName: '', lat: '', lng: '', radiusMeters: 150, lateAfter: '09:00', checkOutFrom: '14:00', timezone: 'Asia/Kolkata', passPercent: 33 });
   const [periods, setPeriods] = useState([]);
   const [off, setOff] = useState([]);
@@ -27,6 +33,7 @@ export default function Settings() {
     setPeriods(s.periods.map((p) => ({ start: p.start, end: p.end })));
     setOff(s.weeklyOff || []);
     setLogoUrl(s.logo?.url || null);
+    setTheme({ site: s.theme?.site || 'royal', admin: s.theme?.admin || 'royal' });
   };
   useEffect(() => { api.get('/settings').then(({ data }) => apply(data)).catch((e) => setMsg({ bad: true, text: errMsg(e) })); }, []);
 
@@ -52,6 +59,8 @@ export default function Settings() {
       Object.entries(f).forEach(([k, v]) => { if (v !== '') fd.append(k, v); });
       fd.append('weeklyOff', JSON.stringify(off));
       fd.append('periods', JSON.stringify(periods));
+      fd.append('themeSite', theme.site);
+      fd.append('themeAdmin', theme.admin);
       if (logo) fd.append('logo', logo);
       if (removeLogo) fd.append('removeLogo', 'true');
       const { data } = await api.put('/settings', fd);
@@ -84,6 +93,13 @@ export default function Settings() {
               <span className="sub">Shown in the sidebar. A square image works best (max 2 MB).</span>
             </div>
           </div>
+        </div>
+
+        <div className="card">
+          <h2>Appearance</h2>
+          <p className="sub" style={{ marginBottom: '.9rem' }}>Choose a colour theme for the public website and for this admin panel. The admin panel previews instantly. Click Save settings to apply the choice for everyone.</p>
+          <ThemePicker kind="site" label="Website theme" value={theme.site} onChange={(id) => setTheme((t) => ({ ...t, site: id }))} />
+          <ThemePicker kind="admin" label="Admin panel and teacher portal theme" value={theme.admin} onChange={(id) => { setTheme((t) => ({ ...t, admin: id })); applyAdminTheme(id); }} />
         </div>
 
         <div className="card">

@@ -6,6 +6,7 @@ export const DEFAULT_PERIODS = [
   { number: 5, start: '12:00', end: '12:45' }, { number: 6, start: '12:45', end: '13:30' },
   { number: 7, start: '13:30', end: '14:15' }, { number: 8, start: '14:15', end: '15:00' },
 ];
+export const THEME_IDS = ['royal', 'emerald', 'crimson', 'violet', 'ocean', 'slate'];
 const period = new mongoose.Schema({ number: Number, start: String, end: String }, { _id: false });
 
 export default mongoose.model('Settings', new mongoose.Schema({
@@ -18,5 +19,6 @@ export default mongoose.model('Settings', new mongoose.Schema({
   passPercent: { type: Number, default: 33 },
   timezone: { type: String, default: 'Asia/Kolkata' },
   weeklyOff: { type: [String], default: ['Sun'] },
+  theme: { site: { type: String, enum: THEME_IDS, default: 'royal' }, admin: { type: String, enum: THEME_IDS, default: 'royal' } },
   periods: { type: [period], default: () => DEFAULT_PERIODS.map((p) => ({ ...p })) },
 }));

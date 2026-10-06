@@ -16,7 +16,7 @@ r.get('/site', wrap(async (req, res) => {
   const [s, c] = await Promise.all([getSettings(), getContent()]);
   const lat = c.contact?.lat ?? s.school?.lat, lng = c.contact?.lng ?? s.school?.lng; // map falls back to the school location in Settings
   res.json({
-    schoolName: s.schoolName, logo: url(s.logo),
+    schoolName: s.schoolName, logo: url(s.logo), theme: { site: s.theme?.site || 'royal', admin: s.theme?.admin || 'royal' },
     map: lat != null && lng != null ? { lat, lng } : null,
     content: {
       hero: { headline: c.hero.headline, subheadline: c.hero.subheadline, ctaText: c.hero.ctaText, ctaLink: c.hero.ctaLink, image: url(c.hero.image) },
